@@ -1,0 +1,90 @@
+class Solution:
+    def separateSquares(self, squares):
+        # Build events and x-coordinates
+        events = []
+        xs = []
+        for x, y, l in squares:
+            x1 = x
+            x2 = x + l
+            y1 = y
+            y2 = y + l
+            events.append((y1, 1, x1, x2))   # add
+            events.append((y2, -1, x1, x2))  # remove
+            xs.append(x1)
+            xs.append(x2)
+
+        xs = sorted(set(xs))
+        x_id = {v: i for i, v in enumerate(xs)}
+
+        # Segment tree that maintains union length of covered x-intervals
+        n = len(xs) - 1  # number of elementary segments between xs[i] and xs[i+1]
+        count = [0] * (4 * n)
+        length = [0] * (4 * n)
+
+        def pull(node, l, r):
+            if count[node] > 0:
+                length[node] = xs[r + 1] - xs[l]
+            else:
+                if l == r:
+                    length[node] = 0
+                else:
+                    length[node] = length[node * 2] + length[node * 2 + 1]
+
+        def update(node, l, r, ql, qr, val):
+            if ql <= l and r <= qr:
+                count[node] += val
+                pull(node, l, r)
+                return
+            mid = (l + r) // 2
+            if ql <= mid:
+                update(node * 2, l, mid, ql, qr, val)
+            if qr > mid:
+                update(node * 2 + 1, mid + 1, r, ql, qr, val)
+            pull(node, l, r)
+
+        events.sort()
+
+        # helper sweep to compute area and optionally stop at target
+        def sweep_find(target=None):
+            cur_area = 0.0
+            i = 0
+            while i < len(events):
+                y = events[i][0]
+
+                # apply all events at this y
+                while i < len(events) and events[i][0] == y:
+                    _, typ, x1, x2 = events[i]
+                    l = x_id[x1]
+                    r = x_id[x2] - 1
+                    if l <= r:
+                        update(1, 0, n - 1, l, r, typ)
+                    i += 1
+
+                if i == len(events):
+                    break
+
+                next_y = events[i][0]
+                dy = next_y - y
+                coveredX = length[1]
+                added = coveredX * dy
+
+                if target is not None and cur_area + added >= target:
+                    # answer lies in [y, next_y]
+                    need = target - cur_area
+                    return y + need / coveredX
+
+                cur_area += added
+
+            return cur_area  # total area if no target
+
+        # 1) total union area
+        total_area = sweep_find(target=None)
+
+        # reset segtree
+        count = [0] * (4 * n)
+        length = [0] * (4 * n)
+
+        # 2) find y where area below == total/2
+        half = total_area / 2.0
+        ansY = sweep_find(target=half)
+        return float(ansY)
