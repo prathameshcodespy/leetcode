@@ -1,0 +1,142 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+static const int MOD = 998244353;
+
+static inline int addmod(int a, int b){
+    a += b;
+    if(a >= MOD) a -= MOD;
+    return a;
+}
+static inline int submod(int a, int b){
+    a -= b;
+    if(a < 0) a += MOD;
+    return a;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int t;
+    cin >> t;
+
+    while (t--) {
+        int n;
+        cin >> n;
+
+        string s;
+        cin >> s;
+        s = " " + s; // 1-index
+
+        vector<vector<int>> g(n + 1);
+        for(int i = 0; i < n - 1; i++){
+            int u, v;
+            cin >> u >> v;
+            g[u].push_back(v);
+            g[v].push_back(u);
+        }
+
+        // Root at 1, make parent tree
+        vector<int> parent(n + 1, 0);
+        vector<int> tin(n + 1), tout(n + 1), id(n + 1);
+        int timer = 0;
+
+        vector<int> st;
+        st.reserve(n);
+        st.push_back(1);
+        parent[1] = -1;
+
+        // iterative dfs order (enter/exit)
+        vector<int> it(n + 1, 0);
+        vector<int> order;
+        order.reserve(n);
+
+        while(!st.empty()){
+            int u = st.back();
+            if(it[u] == 0){
+                tin[u] = ++timer;
+                id[timer] = u;
+            }
+            if(it[u] < (int)g[u].size()){
+                int v = g[u][it[u]++];
+                if(v == parent[u]) continue;
+                parent[v] = u;
+                st.push_back(v);
+            } else {
+                tout[u] = timer;
+                st.pop_back();
+            }
+        }
+
+        // tout index in tin-space for each tin position
+        vector<int> toutAtTin(n + 1);
+        for(int pos = 1; pos <= n; pos++){
+            int u = id[pos];
+            toutAtTin[pos] = tout[u];
+        }
+
+        // DP matrix F[pos_i][pos_j] = number of identical strings from starts i,j
+        // with rule: if s[i]!=s[j] => 0 else 1 + sum over proper descendants pairs
+        //
+        // Use 2D suffix sums suf[][] to query rectangle quickly:
+        // sumRect(x1..x2, y1..y2) in O(1)
+
+        // Use int to save memory
+        vector<vector<int>> F(n + 2, vector<int>(n + 2, 0));
+        vector<vector<int>> suf(n + 3, vector<int>(n + 3, 0));
+
+        auto getRect = [&](int x1, int x2, int y1, int y2) -> int {
+            if(x1 > x2 || y1 > y2) return 0;
+            // suffix sum:
+            // sum = suf[x1][y1] - suf[x2+1][y1] - suf[x1][y2+1] + suf[x2+1][y2+1]
+            int res = suf[x1][y1];
+            res = submod(res, suf[x2 + 1][y1]);
+            res = submod(res, suf[x1][y2 + 1]);
+            res = addmod(res, suf[x2 + 1][y2 + 1]);
+            return res;
+        };
+
+        // Compute in reverse so that descendants (larger tin) are already in suf
+        for(int i = n; i >= 1; i--){
+            int ui = id[i];
+            int i2 = toutAtTin[i];
+            for(int j = n; j >= 1; j--){
+                int uj = id[j];
+                int j2 = toutAtTin[j];
+
+                int val = 0;
+                if(s[ui] == s[uj]){
+                    // 1 (stop immediately) +
+                    // all pairs of continuing moves into proper descendants:
+                    // proper descendants interval = [tin+1 .. tout]
+                    int sum = getRect(i + 1, i2, j + 1, j2);
+                    val = addmod(1, sum);
+                }
+                F[i][j] = val;
+
+                // update suffix sum cell
+                int tmp = F[i][j];
+                tmp = addmod(tmp, suf[i + 1][j]);
+                tmp = addmod(tmp, suf[i][j + 1]);
+                tmp = submod(tmp, suf[i + 1][j + 1]);
+                suf[i][j] = tmp;
+            }
+        }
+
+        // Answer for each node x:
+        // sum over all pairs (u,v) in subtree(x) of f(u,v)
+        // which is rectangle sum [tin[x]..tout[x]] x [tin[x]..tout[x]] in F.
+        vector<int> ans(n + 1, 0);
+        for(int x = 1; x <= n; x++){
+            int L = tin[x], R = tout[x];
+            ans[x] = getRect(L, R, L, R);
+        }
+
+        for(int i = 1; i <= n; i++){
+            cout << ans[i] << (i == n ? '\n' : ' ');
+        }
+    }
+
+    return 0;
+}
