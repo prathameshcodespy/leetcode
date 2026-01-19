@@ -1,0 +1,30 @@
+class Solution(object):
+    def maxSideLength(self, mat, threshold):
+        m, n = len(mat), len(mat[0])
+
+        # prefix sum
+        pref = [[0] * (n + 1) for _ in range(m + 1)]
+        for i in range(m):
+            for j in range(n):
+                pref[i + 1][j + 1] = mat[i][j] + pref[i][j + 1] + pref[i + 1][j] - pref[i][j]
+
+        def getsum(r1, c1, r2, c2):
+            return pref[r2][c2] - pref[r1][c2] - pref[r2][c1] + pref[r1][c1]
+
+        lo, hi = 0, min(m, n)
+        while lo < hi:
+            mid = (lo + hi + 1) // 2
+            ok = False
+            for i in range(m - mid + 1):
+                for j in range(n - mid + 1):
+                    if getsum(i, j, i + mid, j + mid) <= threshold:
+                        ok = True
+                        break
+                if ok:
+                    break
+            if ok:
+                lo = mid
+            else:
+                hi = mid - 1
+
+        return lo
