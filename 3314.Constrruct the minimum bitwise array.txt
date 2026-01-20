@@ -1,0 +1,11 @@
+class Solution(object):
+    def minBitwiseArray(self, nums):
+        ans = []
+        for x in nums:
+            best = -1
+            for a in range(x + 1):
+                if (a | (a + 1)) == x:
+                    best = a
+                    break
+            ans.append(best)
+        return ans
