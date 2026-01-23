@@ -1,0 +1,87 @@
+import heapq
+
+class Solution:
+    def minimumPairRemoval(self, nums):
+        n = len(nums)
+        if n <= 1:
+            return 0
+
+        # Doubly linked list representation
+        L = [-1] * n
+        R = [-1] * n
+        alive = [True] * n
+
+        for i in range(n):
+            if i > 0:
+                L[i] = i - 1
+            if i < n - 1:
+                R[i] = i + 1
+
+        val = nums[:]  # current values stored at each node
+
+        # Count bad edges (inversions in linked list)
+        bad = 0
+        for i in range(n - 1):
+            if val[i] > val[i + 1]:
+                bad += 1
+
+        if bad == 0:
+            return 0
+
+        # versioning for pairs starting at i
+        ver = [0] * n
+
+        heap = []
+        for i in range(n - 1):
+            heapq.heappush(heap, (val[i] + val[i + 1], i, ver[i]))
+
+        def edge_bad(i, j):
+            return 1 if i != -1 and j != -1 and alive[i] and alive[j] and val[i] > val[j] else 0
+
+        ops = 0
+
+        while bad > 0:
+            s, i, v = heapq.heappop(heap)
+
+            j = R[i]
+            # validate this pair
+            if j == -1 or not alive[i] or not alive[j]:
+                continue
+            if v != ver[i]:
+                continue
+            if val[i] + val[j] != s:
+                continue
+
+            # neighbors
+            a = L[i]
+            b = R[j]
+
+            # remove old affected edges from bad count
+            bad -= edge_bad(a, i)
+            bad -= edge_bad(i, j)
+            bad -= edge_bad(j, b)
+
+            # merge i and j into i
+            val[i] = val[i] + val[j]
+            alive[j] = False
+
+            # relink
+            R[i] = b
+            if b != -1:
+                L[b] = i
+
+            # add new affected edges
+            bad += edge_bad(a, i)
+            bad += edge_bad(i, b)
+
+            # update heap entries involving i
+            ver[i] += 1
+            if R[i] != -1:
+                heapq.heappush(heap, (val[i] + val[R[i]], i, ver[i]))
+            if a != -1:
+                ver[a] += 1
+                heapq.heappush(heap, (val[a] + val[i], a, ver[a]))
+
+            ops += 1
+
+        return ops
