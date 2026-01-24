@@ -1,0 +1,21 @@
+import sys
+input = sys.stdin.readline
+
+t = int(input())
+for _ in range(t):
+    n = int(input())
+
+    ans = []
+    cur = n - 1
+
+    while cur >= 0:
+        pw = 1
+        while (pw << 1) - 1 <= cur:
+            pw <<= 1
+
+        start = pw - 1
+        for x in range(cur, start - 1, -1):
+            ans.append(x + 1)   # make it 1..n
+        cur = start - 1
+
+    print(*ans)
