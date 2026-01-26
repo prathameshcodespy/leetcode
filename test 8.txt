@@ -1,0 +1,62 @@
+import sys
+from collections import deque
+
+input = sys.stdin.readline
+
+t = int(input())
+for _ in range(t):
+    n = int(input())
+    a = list(map(int, input().split()))
+    p = [x & 1 for x in a]
+
+    g = [[] for _ in range(n)]
+    for _ in range(n - 1):
+        u, v = map(int, input().split())
+        u -= 1
+        v -= 1
+        g[u].append(v)
+        g[v].append(u)
+
+    # S[v] = sum(parity of alive neighbors) mod 2
+    S = [0] * n
+    for v in range(n):
+        s = 0
+        for u in g[v]:
+            s ^= p[u]
+        S[v] = s
+
+    alive = [True] * n
+    inq = [False] * n
+    q = deque()
+
+    def removable(v):
+        return alive[v] and (p[v] ^ S[v]) == 1
+
+    for v in range(n):
+        if removable(v):
+            q.append(v)
+            inq[v] = True
+
+    order = []
+
+    while q:
+        v = q.popleft()
+        inq[v] = False
+        if not removable(v):
+            continue
+
+        alive[v] = False
+        order.append(v)
+
+        for u in g[v]:
+            if alive[u]:
+                S[u] ^= p[v]
+                if removable(u) and not inq[u]:
+                    q.append(u)
+                    inq[u] = True
+
+    if len(order) != n:
+        print("NO")
+    else:
+        print("YES")
+        print(*[x + 1 for x in order])
