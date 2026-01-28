@@ -1,0 +1,105 @@
+import sys
+import math
+input = sys.stdin.readline
+
+MOD = 10**9 + 7
+
+def solve():
+    t = int(input())
+    for _ in range(t):
+        n, c = map(int, input().split())
+        s = input().strip()
+
+        # prime factorization of c
+        tmp = c
+        primes = {}
+        p = 2
+        while p * p <= tmp:
+            while tmp % p == 0:
+                primes[p] = primes.get(p, 0) + 1
+                tmp //= p
+            p += 1
+        if tmp > 1:
+            primes[tmp] = primes.get(tmp, 0) + 1
+
+        # track how many prime factors are currently in ways
+        cur_factors = {p: 0 for p in primes}
+
+        def multiply(x):
+            """Multiply x into result, track prime exponents"""
+            nonlocal ways
+            for p in primes:
+                while x % p == 0:
+                    x //= p
+                    cur_factors[p] += 1
+            ways = (ways * x) % MOD
+
+        def divisible():
+            """Check if current product divisible by c"""
+            for p in primes:
+                if cur_factors[p] < primes[p]:
+                    return False
+            return True
+
+        # initial state
+        ways = 1
+        l = r = 0   # segment containing {0}
+        free = n - 1  # free positions outside segment
+
+        # position of 0 can be anywhere
+        multiply(n)
+
+        ok = True
+
+        for i in range(1, n):
+            ch = s[i]
+
+            # try to place inside segment (w[i] = 0)
+            inside_choices = r - l + 1
+            outside_choices = free
+
+            use_zero = False
+
+            if ch == '0':
+                if inside_choices == 0:
+                    ok = False
+                    break
+                use_zero = True
+
+            elif ch == '1':
+                if outside_choices == 0:
+                    ok = False
+                    break
+                use_zero = False
+
+            else:  # '?'
+                if inside_choices > 0:
+                    use_zero = True
+                elif outside_choices > 0:
+                    use_zero = False
+                else:
+                    ok = False
+                    break
+
+            if use_zero:
+                multiply(inside_choices)
+                # segment expands by 1
+                r += 1
+            else:
+                multiply(outside_choices)
+                free -= 1
+                # expand segment outward
+                if free + (r - l + 1) == n:
+                    # attach on right
+                    r += 1
+                else:
+                    l -= 1
+
+        if not ok or divisible():
+            print(-1)
+        else:
+            print(ways % MOD)
+
+
+if __name__ == "__main__":
+    solve()
