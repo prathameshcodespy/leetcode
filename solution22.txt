@@ -1,0 +1,31 @@
+t = int(input())
+for _ in range(t):
+    n = int(input())
+    s = input().strip()
+    
+    existing = s.count('1')
+    added = 0
+    i = 0
+    
+    while i < n:
+        if s[i] == '0':
+            j = i
+            while j < n and s[j] == '0':
+                j += 1
+            
+            length = j - i
+            
+            # Check boundaries
+            left_one = (i - 1 >= 0 and s[i - 1] == '1')
+            right_one = (j < n and s[j] == '1')
+            
+            if left_one and right_one:
+                added += (length - 1) // 2
+            else:
+                added += length // 2
+            
+            i = j
+        else:
+            i += 1
+    
+    print(existing + added)
