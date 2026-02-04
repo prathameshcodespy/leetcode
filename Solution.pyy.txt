@@ -1,0 +1,30 @@
+import sys
+input = sys.stdin.readline
+
+t = int(input())
+for _ in range(t):
+    n = int(input())
+    a = list(map(int, input().split()))
+    s = input().strip()
+
+    time = 0
+    keys = 0
+    ans = []
+
+    for i in range(n):
+        # collect key in room i+1
+        if s[i] == '1':
+            keys += 1
+
+        if a[i] <= time:
+            time += 1
+        else:
+            if keys > 0:
+                keys -= 1
+                time += 1
+            else:
+                time = a[i] + 1
+
+        ans.append(time)
+
+    print(*ans)
