@@ -1,13 +1,81 @@
-class Solution:
-    def constructTransformedArray(self, nums):
-        n = len(nums)
-        result = [0] * n
+import sys
+sys.setrecursionlimit(10**7)
 
-        for i in range(n):
-            if nums[i] == 0:
-                result[i] = 0
-            else:
-                new_index = (i + nums[i]) % n
-                result[i] = nums[new_index]
+MOD = 998244353
+MAXN = 5000
 
+# Precompute factorials
+fact = [1] * (MAXN + 1)
+for i in range(1, MAXN + 1):
+    fact[i] = fact[i-1] * i % MOD
+
+
+def solve_case(n, a, b):
+    # include root 0
+    a = [0] + a
+    b = [0] + b
+
+    posA = [0] * (n + 1)
+    posB = [0] * (n + 1)
+
+    for i in range(n + 1):
+        posA[a[i]] = i
+        posB[b[i]] = i
+
+    # Recursive interval solver
+    def dfs(lA, rA, lB, rB):
+        if lA > rA:
+            return 1
+
+        # root must match
+        if a[lA] != b[lB]:
+            return 0
+
+        root = a[lA]
+        iA = lA + 1
+        iB = lB + 1
+
+        children = 0
+        result = 1
+
+        while iA <= rA:
+            # child root
+            child = a[iA]
+            child_posB = posB[child]
+
+            # subtree size in A
+            size = 1
+            j = iA + 1
+            while j <= rA and posB[a[j]] > child_posB:
+                j += 1
+                size += 1
+
+            # check B interval
+            if child_posB + size - 1 > rB:
+                return 0
+
+            # recursive
+            sub = dfs(iA, iA + size - 1,
+                      child_posB, child_posB + size - 1)
+            if sub == 0:
+                return 0
+
+            result = result * sub % MOD
+            children += 1
+            iA += size
+
+        result = result * fact[children] % MOD
         return result
+
+    return dfs(0, n, 0, n)
+
+
+# Driver
+input = sys.stdin.readline
+t = int(input())
+
+for _ in range(t):
+    n = int(input())
+    a = list(map(int, input().split()))
+    b = list(map(int, input().split()))
+    print(solve_case(n, a, b))
