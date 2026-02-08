@@ -1,0 +1,42 @@
+import sys
+input = sys.stdin.readline
+
+t = int(input())
+for _ in range(t):
+    n = int(input())
+    s = [input().strip() for _ in range(n)]
+    
+    adj = [[] for _ in range(n)]
+    
+    for i in range(n):
+        for j in range(n):
+            if s[i][j] == '1':
+                adj[i].append(j)
+    
+    # find start node (degree 1)
+    start = -1
+    for i in range(n):
+        if len(adj[i]) == 1:
+            start = i
+            break
+    
+    # traverse path
+    q = []
+    visited = [False] * n
+    curr = start
+    prev = -1
+    
+    while curr != -1:
+        q.append(curr + 1)
+        visited[curr] = True
+        
+        next_node = -1
+        for nei in adj[curr]:
+            if not visited[nei]:
+                next_node = nei
+                break
+        
+        prev = curr
+        curr = next_node
+    
+    print(*q)
