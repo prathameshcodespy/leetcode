@@ -1,22 +1,17 @@
-import sys
-import threading
-
-def solve():
-    import sys
-    input = sys.stdin.readline
-    
-    t = int(input())
-    for _ in range(t):
-        x, k = map(int, input().split())
+class Solution:
+    def longestBalanced(self, s: str) -> int:
+        n = len(s)
+        max_len = 0
         
-        if k == 1:
-            print(1)
-            continue
+        for i in range(n):
+            freq = [0] * 26
+            
+            for j in range(i, n):
+                freq[ord(s[j]) - ord('a')] += 1
+                
+                counts = [f for f in freq if f > 0]
+                
+                if len(set(counts)) == 1:
+                    max_len = max(max_len, j - i + 1)
         
-        # highest power of 2 <= (k-1)
-        p = 1 << ((k - 1).bit_length() - 1)
-        
-        print(2 * p - 1)
-
-if __name__ == "__main__":
-    solve()
+        return max_len
