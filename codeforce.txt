@@ -1,47 +1,14 @@
-class Solution:
-    def longestBalanced(self, s: str) -> int:
-        def calc1(s: str) -> int:
-            res = 0
-            i, n = 0, len(s)
-            while i < n:
-                j = i + 1
-                while j < n and s[j] == s[i]:
-                    j += 1
-                res = max(res, j - i)
-                i = j
-            return res
-
-        def calc2(s: str, a: str, b: str) -> int:
-            res = 0
-            i, n = 0, len(s)
-            while i < n:
-                while i < n and s[i] not in (a, b):
-                    i += 1
-                pos = {0: i - 1}
-                d = 0
-                while i < n and s[i] in (a, b):
-                    d += 1 if s[i] == a else -1
-                    if d in pos:
-                        res = max(res, i - pos[d])
-                    else:
-                        pos[d] = i
-                    i += 1
-            return res
-
-        def calc3(s: str) -> int:
-            pos = {(0, 0): -1}
-            cnt = Counter()
-            res = 0
-            for i, c in enumerate(s):
-                cnt[c] += 1
-                k = (cnt["a"] - cnt["b"], cnt["b"] - cnt["c"])
-                if k in pos:
-                    res = max(res, i - pos[k])
-                else:
-                    pos[k] = i
-            return res
-
-        x = calc1(s)
-        y = max(calc2(s, "a", "b"), calc2(s, "b", "c"), calc2(s, "a", "c"))
-        z = calc3(s)
-        return max(x, y, z)
+class Solution(object):
+    def champagneTower(self, poured, query_row, query_glass):
+        dp = [[0.0] * (r + 1) for r in range(query_row + 1)]
+        dp[0][0] = poured
+        
+        for r in range(query_row):
+            for c in range(len(dp[r])):
+                if dp[r][c] > 1:
+                    overflow = (dp[r][c] - 1) / 2.0
+                    dp[r + 1][c] += overflow
+                    dp[r + 1][c + 1] += overflow
+                    dp[r][c] = 1
+        
+        return min(1, dp[query_row][query_glass])
