@@ -1,14 +1,21 @@
 class Solution(object):
-    def champagneTower(self, poured, query_row, query_glass):
-        dp = [[0.0] * (r + 1) for r in range(query_row + 1)]
-        dp[0][0] = poured
+    def addBinary(self, a, b):
+        i = len(a) - 1
+        j = len(b) - 1
+        carry = 0
+        result = []
         
-        for r in range(query_row):
-            for c in range(len(dp[r])):
-                if dp[r][c] > 1:
-                    overflow = (dp[r][c] - 1) / 2.0
-                    dp[r + 1][c] += overflow
-                    dp[r + 1][c + 1] += overflow
-                    dp[r][c] = 1
+        while i >= 0 or j >= 0 or carry:
+            total = carry
+            
+            if i >= 0:
+                total += int(a[i])
+                i -= 1
+            if j >= 0:
+                total += int(b[j])
+                j -= 1
+            
+            result.append(str(total % 2))
+            carry = total // 2
         
-        return min(1, dp[query_row][query_glass])
+        return ''.join(result[::-1])
