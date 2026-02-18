@@ -1,20 +1,28 @@
 import java.util.*;
 
-class Solution {
-    public List<String> readBinaryWatch(int turnedOn) {
-        List<String> result = new ArrayList<>();
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int t = sc.nextInt();
         
-        for (int hour = 0; hour < 12; hour++) {
-            for (int minute = 0; minute < 60; minute++) {
-                
-                int totalBits = Integer.bitCount(hour) + Integer.bitCount(minute);
-                
-                if (totalBits == turnedOn) {
-                    result.add(hour + ":" + String.format("%02d", minute));
-                }
+        while (t-- > 0) {
+            int n = sc.nextInt();
+            String s = sc.next();
+            
+            int openRound = 0, closeRound = 0;
+            int openSquare = 0, closeSquare = 0;
+            
+            for (char c : s.toCharArray()) {
+                if (c == '(') openRound++;
+                else if (c == ')') closeRound++;
+                else if (c == '[') openSquare++;
+                else closeSquare++;
             }
+            
+            int roundFix = Math.abs(openRound - closeRound) / 2;
+            int squareFix = Math.abs(openSquare - closeSquare) / 2;
+            
+            System.out.println(roundFix + squareFix);
         }
-        
-        return result;
     }
 }
