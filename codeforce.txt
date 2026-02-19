@@ -1,28 +1,12 @@
-import java.util.*;
+import sys
 
-public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int t = sc.nextInt();
-        
-        while (t-- > 0) {
-            int n = sc.nextInt();
-            String s = sc.next();
-            
-            int openRound = 0, closeRound = 0;
-            int openSquare = 0, closeSquare = 0;
-            
-            for (char c : s.toCharArray()) {
-                if (c == '(') openRound++;
-                else if (c == ')') closeRound++;
-                else if (c == '[') openSquare++;
-                else closeSquare++;
-            }
-            
-            int roundFix = Math.abs(openRound - closeRound) / 2;
-            int squareFix = Math.abs(openSquare - closeSquare) / 2;
-            
-            System.out.println(roundFix + squareFix);
-        }
-    }
-}
+input = sys.stdin.readline
+
+t = int(input())
+for _ in range(t):
+    n, m = map(int, input().split())
+    
+    print(m)
+    for _ in range(m):
+        v, u = map(int, input().split())
+        print(v, u)
